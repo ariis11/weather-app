@@ -85,7 +85,7 @@ describe("GET /api/weather", () => {
       expect(response.status).toBe(400);
       const data = await response.json();
       expect(data.error).toBe(
-        "'latitude' and 'longitude' must be valid numbers"
+        "'latitude' and 'longitude' must be valid finite numbers"
       );
       expect(mockFetch).not.toHaveBeenCalled();
     });
@@ -97,7 +97,31 @@ describe("GET /api/weather", () => {
       expect(response.status).toBe(400);
       const data = await response.json();
       expect(data.error).toBe(
-        "'latitude' and 'longitude' must be valid numbers"
+        "'latitude' and 'longitude' must be valid finite numbers"
+      );
+      expect(mockFetch).not.toHaveBeenCalled();
+    });
+
+    it("returns 400 when latitude has trailing non-numeric characters (e.g. '3.14abc')", async () => {
+      const req = makeRequest("/api/weather?latitude=3.14abc&longitude=101.68653");
+      const response = await GET(req);
+
+      expect(response.status).toBe(400);
+      const data = await response.json();
+      expect(data.error).toBe(
+        "'latitude' and 'longitude' must be valid finite numbers"
+      );
+      expect(mockFetch).not.toHaveBeenCalled();
+    });
+
+    it("returns 400 when longitude has trailing non-numeric characters (e.g. '101.68abc')", async () => {
+      const req = makeRequest("/api/weather?latitude=3.1412&longitude=101.68abc");
+      const response = await GET(req);
+
+      expect(response.status).toBe(400);
+      const data = await response.json();
+      expect(data.error).toBe(
+        "'latitude' and 'longitude' must be valid finite numbers"
       );
       expect(mockFetch).not.toHaveBeenCalled();
     });

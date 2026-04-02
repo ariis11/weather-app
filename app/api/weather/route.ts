@@ -17,12 +17,12 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const latitude = parseFloat(lat);
-  const longitude = parseFloat(lon);
+  const latitude = Number(lat);
+  const longitude = Number(lon);
 
-  if (isNaN(latitude) || isNaN(longitude)) {
+  if (!isFinite(latitude) || !isFinite(longitude)) {
     return NextResponse.json(
-      { error: "'latitude' and 'longitude' must be valid numbers" },
+      { error: "'latitude' and 'longitude' must be valid finite numbers" },
       { status: 400 }
     );
   }

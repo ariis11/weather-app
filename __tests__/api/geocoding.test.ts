@@ -39,6 +39,54 @@ describe("GET /api/geocoding", () => {
     vi.stubGlobal("fetch", mockFetch);
   });
 
+  describe("validation – count", () => {
+    it("returns 400 when count is not a number", async () => {
+      const req = makeRequest("/api/geocoding?name=London&count=abc");
+      const response = await GET(req);
+
+      expect(response.status).toBe(400);
+      const data = await response.json();
+      expect(data.error).toBe("'count' must be a positive integer");
+      expect(mockFetch).not.toHaveBeenCalled();
+    });
+
+    it("returns 400 when count has trailing non-numeric characters (e.g. '5abc')", async () => {
+      const req = makeRequest("/api/geocoding?name=London&count=5abc");
+      const response = await GET(req);
+
+      expect(response.status).toBe(400);
+      const data = await response.json();
+      expect(data.error).toBe("'count' must be a positive integer");
+      expect(mockFetch).not.toHaveBeenCalled();
+    });
+
+    it("returns 400 when count is a float (e.g. '2.5')", async () => {
+      const req = makeRequest("/api/geocoding?name=London&count=2.5");
+      const response = await GET(req);
+
+      expect(response.status).toBe(400);
+      const data = await response.json();
+      expect(data.error).toBe("'count' must be a positive integer");
+      expect(mockFetch).not.toHaveBeenCalled();
+    });
+
+    it("returns 400 when count is zero", async () => {
+      const req = makeRequest("/api/geocoding?name=London&count=0");
+      const response = await GET(req);
+
+      expect(response.status).toBe(400);
+      expect(mockFetch).not.toHaveBeenCalled();
+    });
+
+    it("returns 400 when count is negative", async () => {
+      const req = makeRequest("/api/geocoding?name=London&count=-1");
+      const response = await GET(req);
+
+      expect(response.status).toBe(400);
+      expect(mockFetch).not.toHaveBeenCalled();
+    });
+  });
+
   describe("validation", () => {
     it("returns 400 when the name param is missing", async () => {
       const req = makeRequest("/api/geocoding");

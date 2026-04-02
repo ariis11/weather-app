@@ -14,12 +14,21 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const count = searchParams.get("count") ?? "5";
+  const rawCount = searchParams.get("count") ?? "5";
+  const count = Number(rawCount);
+
+  if (!Number.isInteger(count) || count < 1) {
+    return NextResponse.json(
+      { error: "'count' must be a positive integer" },
+      { status: 400 }
+    );
+  }
+
   const language = searchParams.get("language") ?? "en";
 
   const upstreamUrl = new URL(GEOCODING_API_BASE);
   upstreamUrl.searchParams.set("name", name.trim());
-  upstreamUrl.searchParams.set("count", count);
+  upstreamUrl.searchParams.set("count", String(count));
   upstreamUrl.searchParams.set("language", language);
   upstreamUrl.searchParams.set("format", "json");
 

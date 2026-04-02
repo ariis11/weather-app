@@ -190,6 +190,20 @@ This file tracks the prompts used during development of the Weather App.
 
 ---
 
+### Prompt 20
+> what could be useful to display in weather card and look good? [listed available Open-Meteo fields]
+
+**Result:** Added `apparent_temperature`, `relative_humidity_2m`, `precipitation`, `weather_code`, `cloud_cover`, `wind_speed_10m`, `wind_direction_10m`, `is_day` to the `current=` param in `handleSelectLocation`. Expanded `CurrentWeather` interface with typed fields for all new variables. Rewrote `WeatherCard` to show: condition icon (emoji, day/night aware via `is_day`) + label mapped from `weather_code`; large temperature + "feels like" line; 2×2 metric tile grid (humidity, wind with compass direction, precipitation, cloud cover); slim meta footer (update time, timezone abbreviation, elevation).
+
+---
+
+### Prompt 19
+> now create weather display component
+
+**Result:** Created `components/WeatherCard.tsx`. Accepts `location` (name, country, optional admin1) and `weather` (`WeatherResponse`). Displays: location name + subtitle (admin1, country) with a map-pin icon; a temperature-based emoji icon (❄️ → 🔥 across temperature ranges); the temperature value in a large thin font coloured by range (blue → cyan → teal → amber → orange → red); and a meta row with update time, timezone abbreviation, and elevation. Restored `admin1` and `timezone` to the `SelectedLocation` type in `page.tsx`. Replaced the placeholder card in `page.tsx` with `<WeatherCard>`.
+
+---
+
 ### Prompt 18
 > implement handleSelectedLocation which would be used by both search history and search lists selections. handle query, close dropdown, fetch weather, set selectedLocation and weather and if anything else is needed
 

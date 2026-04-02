@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import SearchInput from "@/components/SearchInput";
+import WeatherCard from "@/components/WeatherCard";
 import type { GeocodingResult, GeocodingResponse } from "@/types/geocoding";
 import type { WeatherResponse } from "@/types/weather";
 import type { SearchHistoryEntry } from "@/types/searchHistory";
@@ -102,7 +103,17 @@ export default function Home() {
         latitude: String(location.latitude),
         longitude: String(location.longitude),
         timezone: "auto",
-        current: "temperature_2m",
+        current: [
+          "temperature_2m",
+          "apparent_temperature",
+          "relative_humidity_2m",
+          "precipitation",
+          "weather_code",
+          "cloud_cover",
+          "wind_speed_10m",
+          "wind_direction_10m",
+          "is_day",
+        ].join(","),
       });
 
       const res = await fetch(`/api/weather?${params}`);
@@ -139,7 +150,8 @@ export default function Home() {
       .catch(() => undefined);
   }
 
-  const hasWeather = selectedLocation !== null && weather !== null;
+  const hasSelectedLocation = selectedLocation !== null;
+  const hasWeather = weather !== null;
 
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-br from-sky-50 via-white to-blue-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
@@ -156,11 +168,11 @@ export default function Home() {
       {/* ── Main content ─────────────────────────────────────────────────── */}
       <main
         className={`flex flex-1 flex-col items-center px-4 transition-all duration-300 ${
-          hasWeather ? "justify-start pt-10" : "justify-center pb-16"
+          hasSelectedLocation ? "justify-start pt-10" : "justify-center pb-16"
         }`}
       >
         {/* Hero text — hidden once a location is selected */}
-        {!hasWeather && (
+        {!hasSelectedLocation && (
           <div className="mb-8 text-center">
             <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
               What&apos;s the weather like?
@@ -189,10 +201,23 @@ export default function Home() {
           />
         </div>
 
-        {/* Weather card placeholder — populated in a later step */}
-        {hasWeather && (
-          <div className="mt-6 w-full max-w-xl rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
-            {weather.current.temperature_2m}°C
+        {hasSelectedLocation && (
+          <div className="mt-6 w-full max-w-xl">
+            {isWeatherLoading && (
+              <div className="rounded-2xl border border-slate-200 bg-white px-6 py-10 text-center text-sm text-slate-500 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+                Loading weather...
+              </div>
+            )}
+
+            {weatherError && !isWeatherLoading && (
+              <div className="rounded-2xl border border-red-200 bg-red-50 px-6 py-10 text-center text-sm text-red-700 shadow-sm dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
+                {weatherError}
+              </div>
+            )}
+
+            {weather && !isWeatherLoading && !weatherError && (
+              <WeatherCard location={selectedLocation} weather={weather} />
+            )}
           </div>
         )}
       </main>

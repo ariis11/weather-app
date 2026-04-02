@@ -4,8 +4,6 @@ This file tracks the prompts used during development of the Weather App.
 
 ---
 
-## Session 1 — 2026-04-01
-
 ### Prompt 1
 > I have added task description - home-task_software-engineer.md
 >
@@ -140,5 +138,16 @@ This file tracks the prompts used during development of the Weather App.
 > [Terminal output] 11 tests failing — `upsertSearchHistory` mock call counts accumulating across tests
 
 **Result:** Added `vi.clearAllMocks()` to the global `afterEach` in `vitest.setup.ts`. `vi.restoreAllMocks()` only restores `spyOn` spies and never clears call history on `vi.mock()` factory mocks; `vi.clearAllMocks()` resets the call count after every test, which is what the `not.toHaveBeenCalled()` assertions require.
+
+---
+
+### Prompt 12
+> we are done with the backend, lets move on to the frontend now.
+>
+> Build the main page layout and add a search input component. Keep state in the page component (query, focus, loading, selected location, weather, errors)
+>
+> search input will work as a main component for displaying available locations when typing in the search query and also displaying search history when no query is present. all of that logic and dropdown item loading will be done later, for now only the layout and main structure
+
+**Result:** Updated `app/globals.css` to use Geist font and a refined color palette. Created `components/SearchInput.tsx` with a styled input (spinner/search icon, clear button, focus ring) and a dropdown that shows a "Results" section header when a query is present or a "Recent searches" section header when the field is empty — both with empty `<ul>` placeholders ready for items. Rewrote `app/page.tsx` as a `"use client"` component holding all five state slices (`query`, `isFocused`, `isLoading`, `selectedLocation`, `weather`, `error`). Layout: sticky header, gradient background, centered hero text that hides once a location is selected, error banner, and a weather card placeholder area.
 
 ---

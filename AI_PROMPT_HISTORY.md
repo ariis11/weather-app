@@ -151,3 +151,26 @@ This file tracks the prompts used during development of the Weather App.
 **Result:** Updated `app/globals.css` to use Geist font and a refined color palette. Created `components/SearchInput.tsx` with a styled input (spinner/search icon, clear button, focus ring) and a dropdown that shows a "Results" section header when a query is present or a "Recent searches" section header when the field is empty — both with empty `<ul>` placeholders ready for items. Rewrote `app/page.tsx` as a `"use client"` component holding all five state slices (`query`, `isFocused`, `isLoading`, `selectedLocation`, `weather`, `error`). Layout: sticky header, gradient background, centered hero text that hides once a location is selected, error banner, and a weather card placeholder area.
 
 ---
+
+### Prompt 13
+> now add search history loading on page mount and show it in a dropdown when the input is focused and empty
+
+**Result:** Added `useEffect` to `app/page.tsx` that fetches `GET /api/search-history?limit=5` on mount with `isHistoryLoading` state. Passed `searchHistory` and `isHistoryLoading` down to `SearchInput`. Updated `SearchInput` to render: 3 animated skeleton rows while loading, "No recent searches yet" empty state, or a list of `HistoryItem` rows (clock icon, name, country, relative timestamp via `formatRelativeTime`). Added optional `onSelectHistoryItem` prop ready for the next step.
+
+---
+
+### Prompt 14
+> extract history UI to separate component - SearchHistoryList.
+> keep SearchInput mostly as input field, clear button, dropdown shell
+> Also move HistoryItem into another component as well.
+
+**Result:** Extracted `formatRelativeTime` to `lib/formatRelativeTime.ts`. Created `components/HistoryItem.tsx` (single row: clock icon, name, country, relative time). Created `components/SearchHistoryList.tsx` (section header, skeletons, empty state, mapped `HistoryItem` list). `SearchInput` now imports `SearchHistoryList` and only owns the input field, clear button, focus ring, and the dropdown shell that switches between the results placeholder and `<SearchHistoryList />`.
+
+---
+
+### Prompt 15
+> move formatRelativeTime() to /utils
+
+**Result:** Moved `lib/formatRelativeTime.ts` → `utils/formatRelativeTime.ts`. Updated import path in `components/HistoryItem.tsx`.
+
+---

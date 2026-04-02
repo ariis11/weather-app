@@ -1,5 +1,8 @@
 "use client";
 
+import SearchHistoryList from "@/components/SearchHistoryList";
+import type { SearchHistoryEntry } from "@/types/searchHistory";
+
 interface SearchInputProps {
   query: string;
   onChange: (value: string) => void;
@@ -7,6 +10,9 @@ interface SearchInputProps {
   onFocus: () => void;
   onBlur: () => void;
   isLoading: boolean;
+  searchHistory: SearchHistoryEntry[];
+  isHistoryLoading: boolean;
+  onSelectHistoryItem?: (entry: SearchHistoryEntry) => void;
 }
 
 export default function SearchInput({
@@ -16,9 +22,11 @@ export default function SearchInput({
   onFocus,
   onBlur,
   isLoading,
+  searchHistory,
+  isHistoryLoading,
+  onSelectHistoryItem,
 }: SearchInputProps) {
   const hasQuery = query.trim().length > 0;
-  const showDropdown = isFocused;
 
   return (
     <div className="relative w-full">
@@ -92,7 +100,6 @@ export default function SearchInput({
           <button
             type="button"
             aria-label="Clear search"
-            /* prevent the input from blurring when clicking clear */
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => onChange("")}
             className="shrink-0 rounded-full p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
@@ -117,15 +124,13 @@ export default function SearchInput({
       </div>
 
       {/* ── Dropdown ─────────────────────────────────────────────── */}
-      {showDropdown && (
+      {isFocused && (
         <div
-          /* Prevent the input from blurring when the user interacts with the
-             dropdown — click handlers on items will be wired up later. */
           onMouseDown={(e) => e.preventDefault()}
           className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xl"
         >
           {hasQuery ? (
-            /* ── Search results section ── */
+            /* Search results — wired up in the next step */
             <>
               <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 px-4 py-2.5">
                 <svg
@@ -147,37 +152,15 @@ export default function SearchInput({
                   Results
                 </span>
               </div>
-
-              {/* Location result items will be rendered here */}
               <ul role="listbox" aria-label="Location results" />
             </>
           ) : (
-            /* ── Recent searches section ── */
-            <>
-              <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 px-4 py-2.5">
-                <svg
-                  className="h-3.5 w-3.5 text-slate-400"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"
-                  />
-                </svg>
-                <span className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500">
-                  Recent searches
-                </span>
-              </div>
-
-              {/* Search history items will be rendered here */}
-              <ul role="listbox" aria-label="Recent searches" />
-            </>
+            /* Recent searches */
+            <SearchHistoryList
+              entries={searchHistory}
+              isLoading={isHistoryLoading}
+              onSelect={onSelectHistoryItem}
+            />
           )}
         </div>
       )}

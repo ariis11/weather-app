@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SearchInput from "@/components/SearchInput";
 import type { GeocodingResult } from "@/types/geocoding";
 import type { WeatherResponse } from "@/types/weather";
+import type { SearchHistoryEntry } from "@/types/searchHistory";
 
 export default function Home() {
   // ── State ──────────────────────────────────────────────────────────────────
@@ -14,6 +15,26 @@ export default function Home() {
     useState<GeocodingResult | null>(null);
   const [weather, setWeather] = useState<WeatherResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [searchHistory, setSearchHistory] = useState<SearchHistoryEntry[]>([]);
+  const [isHistoryLoading, setIsHistoryLoading] = useState(true);
+
+  // ── Load search history on mount ───────────────────────────────────────────
+  useEffect(() => {
+    async function loadHistory() {
+      try {
+        const res = await fetch("/api/search-history?limit=5");
+        if (res.ok) {
+          const data: SearchHistoryEntry[] = await res.json();
+          setSearchHistory(data);
+        }
+      } catch {
+        setSearchHistory([]);
+      } finally {
+        setIsHistoryLoading(false);
+      }
+    }
+    loadHistory();
+  }, []);
 
   // ── Handlers (wired up in later steps) ────────────────────────────────────
   void setIsLoading;
@@ -62,6 +83,8 @@ export default function Home() {
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
             isLoading={isLoading}
+            searchHistory={searchHistory}
+            isHistoryLoading={isHistoryLoading}
           />
         </div>
 

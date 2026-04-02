@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import SearchInput from "@/components/SearchInput";
-import type { GeocodingResult } from "@/types/geocoding";
+import type { GeocodingResult, GeocodingResponse } from "@/types/geocoding";
 import type { WeatherResponse } from "@/types/weather";
 import type { SearchHistoryEntry } from "@/types/searchHistory";
 
@@ -10,13 +10,48 @@ export default function Home() {
   // ── State ──────────────────────────────────────────────────────────────────
   const [query, setQuery] = useState("");
   const [isFocused, setIsFocused] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [selectedLocation, setSelectedLocation] =
     useState<GeocodingResult | null>(null);
   const [weather, setWeather] = useState<WeatherResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [searchResults, setSearchResults] = useState<GeocodingResult[]>([]);
+  const [isSearchResultsLoading, setIsSearchResultsLoading] = useState(false);
   const [searchHistory, setSearchHistory] = useState<SearchHistoryEntry[]>([]);
   const [isHistoryLoading, setIsHistoryLoading] = useState(true);
+
+  // ── Debounced geocoding search ─────────────────────────────────────────────
+  useEffect(() => {
+    if (query.trim().length < 2) {
+      setSearchResults([]);
+      setIsSearchResultsLoading(false);
+      return;
+    }
+
+    const controller = new AbortController();
+
+    const timer = setTimeout(async () => {
+      setIsSearchResultsLoading(true);
+      try {
+        const res = await fetch(
+          `/api/geocoding?name=${encodeURIComponent(query.trim())}&count=5`,
+          { signal: controller.signal }
+        );
+        if (res.ok) {
+          const data: GeocodingResponse = await res.json();
+          setSearchResults(data.results ?? []);
+        }
+      } catch (err) {
+        if (err instanceof Error && err.name === "AbortError") return;
+        setSearchResults([]);
+      } finally {
+        setIsSearchResultsLoading(false);
+      }
+    }, 300);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [query]);
 
   // ── Load search history on mount ───────────────────────────────────────────
   useEffect(() => {
@@ -37,10 +72,8 @@ export default function Home() {
   }, []);
 
   // ── Handlers (wired up in later steps) ────────────────────────────────────
-  void setIsLoading;
   void setSelectedLocation;
   void setWeather;
-  void setError;
 
   const hasWeather = selectedLocation !== null && weather !== null;
 
@@ -82,18 +115,12 @@ export default function Home() {
             isFocused={isFocused}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
-            isLoading={isLoading}
+            searchResults={searchResults}
+            isSearchResultsLoading={isSearchResultsLoading}
             searchHistory={searchHistory}
             isHistoryLoading={isHistoryLoading}
           />
         </div>
-
-        {/* Error banner */}
-        {error && (
-          <div className="mt-4 w-full max-w-xl rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-700 dark:text-red-400">
-            {error}
-          </div>
-        )}
 
         {/* Weather card placeholder — populated in a later step */}
         {hasWeather && (

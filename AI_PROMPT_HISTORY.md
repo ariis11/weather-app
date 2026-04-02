@@ -174,3 +174,18 @@ This file tracks the prompts used during development of the Weather App.
 **Result:** Moved `lib/formatRelativeTime.ts` → `utils/formatRelativeTime.ts`. Updated import path in `components/HistoryItem.tsx`.
 
 ---
+
+### Prompt 16
+> okay now in the similar way do the search. Call it after at least 2 characters query length, use debounce 300ms, useEffect on query when making search request
+
+**Result:** Created `components/LocationItem.tsx` (pin icon, name, admin1+country). Created `components/SearchResultsList.tsx` (skeletons, empty state, mapped `LocationItem` list — mirrors `SearchHistoryList`). Added `results`/`isResultsLoading` state to `page.tsx` with a `useEffect` on `query` that uses `setTimeout` (300ms) + `AbortController` for debounce and in-flight request cancellation; only fires when `query.trim().length >= 2`. Updated `SearchInput` with `results`/`isResultsLoading`/`onSelectResult` props; `hasQuery` threshold raised to ≥ 2 so the dropdown shows history for 0–1 characters and switches to results at 2+.
+
+---
+
+### Prompt 17
+> isLoading and isResultsLoading seems like is pretty much the same thing and has mixed up usage in the code, only isResultsLoading should remain.
+> Also rename results and isResultsLoading to searchResults and isSearchResultsLoading so it matches naming of searchHistory.
+
+**Result:** Removed `isLoading`/`setIsLoading` entirely from `page.tsx` and `SearchInput`. Renamed `results` → `searchResults`, `isResultsLoading` → `isSearchResultsLoading` everywhere. Spinner in the input icon now reads from `isSearchResultsLoading`.
+
+---

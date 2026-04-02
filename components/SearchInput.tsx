@@ -1,6 +1,8 @@
 "use client";
 
 import SearchHistoryList from "@/components/SearchHistoryList";
+import SearchResultsList from "@/components/SearchResultsList";
+import type { GeocodingResult } from "@/types/geocoding";
 import type { SearchHistoryEntry } from "@/types/searchHistory";
 
 interface SearchInputProps {
@@ -9,7 +11,9 @@ interface SearchInputProps {
   isFocused: boolean;
   onFocus: () => void;
   onBlur: () => void;
-  isLoading: boolean;
+  searchResults: GeocodingResult[];
+  isSearchResultsLoading: boolean;
+  onSelectResult?: (result: GeocodingResult) => void;
   searchHistory: SearchHistoryEntry[];
   isHistoryLoading: boolean;
   onSelectHistoryItem?: (entry: SearchHistoryEntry) => void;
@@ -21,12 +25,15 @@ export default function SearchInput({
   isFocused,
   onFocus,
   onBlur,
-  isLoading,
+  searchResults,
+  isSearchResultsLoading,
+  onSelectResult,
   searchHistory,
   isHistoryLoading,
   onSelectHistoryItem,
 }: SearchInputProps) {
-  const hasQuery = query.trim().length > 0;
+  // Switch to results mode only when there are enough characters to search
+  const hasQuery = query.trim().length >= 2;
 
   return (
     <div className="relative w-full">
@@ -41,7 +48,7 @@ export default function SearchInput({
       >
         {/* Left icon — spinner while loading, magnifier otherwise */}
         <span className="shrink-0 text-slate-400">
-          {isLoading ? (
+          {isSearchResultsLoading ? (
             <svg
               className="h-5 w-5 animate-spin"
               xmlns="http://www.w3.org/2000/svg"
@@ -130,7 +137,7 @@ export default function SearchInput({
           className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xl"
         >
           {hasQuery ? (
-            /* Search results — wired up in the next step */
+            /* Search results */
             <>
               <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 px-4 py-2.5">
                 <svg
@@ -152,7 +159,11 @@ export default function SearchInput({
                   Results
                 </span>
               </div>
-              <ul role="listbox" aria-label="Location results" />
+              <SearchResultsList
+                results={searchResults}
+                isLoading={isSearchResultsLoading}
+                onSelect={onSelectResult}
+              />
             </>
           ) : (
             /* Recent searches */

@@ -4,6 +4,7 @@ import type { GeocodingResult } from "@/types/geocoding";
 interface SearchResultsListProps {
   results: GeocodingResult[];
   isLoading: boolean;
+  errorMessage?: string | null;
   onSelect?: (result: GeocodingResult) => void;
 }
 
@@ -26,12 +27,17 @@ function ResultSkeletons() {
 export default function SearchResultsList({
   results,
   isLoading,
+  errorMessage,
   onSelect,
 }: SearchResultsListProps) {
   return (
     <ul role="listbox" aria-label="Location results">
       {isLoading ? (
         <ResultSkeletons />
+      ) : errorMessage ? (
+        <li className="px-4 py-8 text-center text-sm text-red-500 dark:text-red-400">
+          {errorMessage}
+        </li>
       ) : results.length === 0 ? (
         <li className="px-4 py-8 text-center text-sm text-slate-400 dark:text-slate-500">
           No locations found

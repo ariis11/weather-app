@@ -189,3 +189,10 @@ This file tracks the prompts used during development of the Weather App.
 **Result:** Removed `isLoading`/`setIsLoading` entirely from `page.tsx` and `SearchInput`. Renamed `results` → `searchResults`, `isResultsLoading` → `isSearchResultsLoading` everywhere. Spinner in the input icon now reads from `isSearchResultsLoading`.
 
 ---
+
+### Prompt 18
+> implement handleSelectedLocation which would be used by both search history and search lists selections. handle query, close dropdown, fetch weather, set selectedLocation and weather and if anything else is needed
+
+**Result:** Added `SelectedLocation` type (minimal shape compatible with both `GeocodingResult` and `SearchHistoryEntry`). Changed `selectedLocation` state type to `SelectedLocation | null`. Added `isWeatherLoading` and `weatherError` state. Implemented `handleSelectLocation` in `page.tsx` which: sets the query to the location name, closes the dropdown, resets previous weather state, fetches weather via `GET /api/weather` with `timezone=auto` fallback, saves the selection to `POST /api/search-history` and refreshes the history list (fire-and-forget). Wired `onSelectResult` and `onSelectHistoryItem` on `SearchInput` to the same handler. Added a loading skeleton and error message below the search bar for weather fetch state.
+
+---

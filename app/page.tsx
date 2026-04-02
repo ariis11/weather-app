@@ -6,15 +6,25 @@ import type { GeocodingResult, GeocodingResponse } from "@/types/geocoding";
 import type { WeatherResponse } from "@/types/weather";
 import type { SearchHistoryEntry } from "@/types/searchHistory";
 
+type SelectedLocation = {
+  name: string;
+  country: string;
+  latitude: number;
+  longitude: number;
+};
+
 export default function Home() {
   // ── State ──────────────────────────────────────────────────────────────────
   const [query, setQuery] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const [selectedLocation, setSelectedLocation] =
-    useState<GeocodingResult | null>(null);
+    useState<SelectedLocation | null>(null);
   const [weather, setWeather] = useState<WeatherResponse | null>(null);
+  const [isWeatherLoading, setIsWeatherLoading] = useState(false);
+  const [weatherError, setWeatherError] = useState<string | null>(null);
   const [searchResults, setSearchResults] = useState<GeocodingResult[]>([]);
   const [isSearchResultsLoading, setIsSearchResultsLoading] = useState(false);
+  const [searchResultsError, setSearchResultsError] = useState<string | null>(null);
   const [searchHistory, setSearchHistory] = useState<SearchHistoryEntry[]>([]);
   const [isHistoryLoading, setIsHistoryLoading] = useState(true);
 
@@ -23,6 +33,7 @@ export default function Home() {
     if (query.trim().length < 2) {
       setSearchResults([]);
       setIsSearchResultsLoading(false);
+      setSearchResultsError(null);
       return;
     }
 
@@ -35,13 +46,19 @@ export default function Home() {
           `/api/geocoding?name=${encodeURIComponent(query.trim())}&count=5`,
           { signal: controller.signal }
         );
-        if (res.ok) {
-          const data: GeocodingResponse = await res.json();
-          setSearchResults(data.results ?? []);
+        if (!res.ok) {
+          setSearchResults([]);
+          setSearchResultsError("Could not load locations. Try again.");
+          return;
         }
+
+        const data: GeocodingResponse = await res.json();
+        setSearchResults(data.results ?? []);
+        setSearchResultsError(null);
       } catch (err) {
         if (err instanceof Error && err.name === "AbortError") return;
         setSearchResults([]);
+        setSearchResultsError("Could not load locations. Try again.");
       } finally {
         setIsSearchResultsLoading(false);
       }
@@ -71,9 +88,56 @@ export default function Home() {
     loadHistory();
   }, []);
 
-  // ── Handlers (wired up in later steps) ────────────────────────────────────
-  void setSelectedLocation;
-  void setWeather;
+  // ── Selection handler ─────────────────────────────────────────────────────
+  async function handleSelectLocation(location: SelectedLocation) {
+    setQuery(location.name);
+    setIsFocused(false);
+    setSelectedLocation(location);
+    setWeather(null);
+    setWeatherError(null);
+    setIsWeatherLoading(true);
+
+    try {
+      const params = new URLSearchParams({
+        latitude: String(location.latitude),
+        longitude: String(location.longitude),
+        timezone: "auto",
+        current: "temperature_2m",
+      });
+
+      const res = await fetch(`/api/weather?${params}`);
+      if (!res.ok) {
+        setWeatherError("Could not load weather data. Please try again.");
+        return;
+      }
+      const data: WeatherResponse = await res.json();
+      setWeather(data);
+    } catch {
+      setWeatherError("Could not load weather data. Please try again.");
+    } finally {
+      setIsWeatherLoading(false);
+    }
+
+    fetch("/api/search-history", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: location.name,
+        country: location.country,
+        latitude: location.latitude,
+        longitude: location.longitude,
+      }),
+    })
+      .then(async (res) => {
+        if (!res.ok) return;
+        const histRes = await fetch("/api/search-history?limit=5");
+        if (histRes.ok) {
+          const data: SearchHistoryEntry[] = await histRes.json();
+          setSearchHistory(data);
+        }
+      })
+      .catch(() => undefined);
+  }
 
   const hasWeather = selectedLocation !== null && weather !== null;
 
@@ -117,15 +181,18 @@ export default function Home() {
             onBlur={() => setIsFocused(false)}
             searchResults={searchResults}
             isSearchResultsLoading={isSearchResultsLoading}
+            searchResultsError={searchResultsError}
+            onSelectResult={handleSelectLocation}
             searchHistory={searchHistory}
             isHistoryLoading={isHistoryLoading}
+            onSelectHistoryItem={handleSelectLocation}
           />
         </div>
 
         {/* Weather card placeholder — populated in a later step */}
         {hasWeather && (
           <div className="mt-6 w-full max-w-xl rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
-            {/* WeatherCard will be rendered here */}
+            {weather.current.temperature_2m}°C
           </div>
         )}
       </main>

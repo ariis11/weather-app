@@ -13,6 +13,7 @@ interface SearchInputProps {
   onBlur: () => void;
   searchResults: GeocodingResult[];
   isSearchResultsLoading: boolean;
+  searchResultsError?: string | null;
   onSelectResult?: (result: GeocodingResult) => void;
   searchHistory: SearchHistoryEntry[];
   isHistoryLoading: boolean;
@@ -27,6 +28,7 @@ export default function SearchInput({
   onBlur,
   searchResults,
   isSearchResultsLoading,
+  searchResultsError,
   onSelectResult,
   searchHistory,
   isHistoryLoading,
@@ -162,6 +164,7 @@ export default function SearchInput({
               <SearchResultsList
                 results={searchResults}
                 isLoading={isSearchResultsLoading}
+                errorMessage={searchResultsError}
                 onSelect={onSelectResult}
               />
             </>

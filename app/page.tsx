@@ -153,7 +153,6 @@ export default function Home() {
   }
 
   const hasSelectedLocation = selectedLocation !== null;
-  const hasWeather = weather !== null;
 
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-br from-sky-50 via-white to-blue-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">

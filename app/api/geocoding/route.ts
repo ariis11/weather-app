@@ -31,19 +31,25 @@ export async function GET(request: NextRequest) {
   upstreamUrl.searchParams.set("count", String(count));
   upstreamUrl.searchParams.set("language", language);
   upstreamUrl.searchParams.set("format", "json");
+  try {
+    const response = await fetch(upstreamUrl.toString(), {
+      next: { revalidate: 60 },
+    });
 
-  const response = await fetch(upstreamUrl.toString(), {
-    next: { revalidate: 60 },
-  });
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: "Failed to fetch geocoding data" },
+        { status: response.status }
+      );
+    }
 
-  if (!response.ok) {
+    const data: GeocodingResponse = await response.json();
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error("[GET /api/geocoding]", error);
     return NextResponse.json(
       { error: "Failed to fetch geocoding data" },
-      { status: response.status }
+      { status: 502 }
     );
   }
-
-  const data: GeocodingResponse = await response.json();
-
-  return NextResponse.json(data);
 }

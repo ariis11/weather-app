@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Weather App — Software Engineer Home Task
+
+A small full-stack weather application built with Next.js and TypeScript.
+
+## Features
+
+- **Location search with autocomplete** — powered by the Open-Meteo geocoding API, results appear after typing at least 2 characters (300 ms debounce)
+- **Current weather display** — fetches real-time conditions for the selected location via the Open-Meteo forecast API, showing temperature, feels-like, humidity, wind, precipitation, and cloud cover
+- **Persistent search history** — recent searches are stored in a local SQLite database using `better-sqlite3`; the same location is never duplicated, only its timestamp is updated
+- **History in the search dropdown** — when the search field is focused with no query typed, the 5 most recently searched locations are shown for quick re-selection
+- **Automated tests** — unit and integration tests written with Vitest, covering all API routes and database helpers
+- **AI prompt history** — every prompt used during development is documented in `AI_PROMPT_HISTORY.md`
+
+## Tech Stack
+
+- **Runtime** — Node.js
+- **Language** — TypeScript
+- **Framework** — Next.js 16
+- **Styling** — Tailwind CSS v4
+- **Database** — SQLite via `better-sqlite3`
+- **Testing** — Vitest
 
 ## Getting Started
 
-First, run the development server:
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+2. Start the development server:
+   ```bash
+   npm run dev
+   ```
+3. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Available Scripts
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- `npm run dev` - start local development server
+- `npm test` - run test suite
+- `npm run test:coverage` - run tests with coverage report
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Assumptions
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Search history is shared across the application — there is no per-user isolation.
+- The search dropdown shows up to **5 recent searches** when the field is focused and empty, and up to **5 geocoding results** when a query is typed.
+- Geocoding search is triggered only after **at least 2 characters** are entered.
+- Selecting a location from either the history list or the search results triggers a weather fetch and saves the entry to history.
 
-## Learn More
+## Trade-offs
 
-To learn more about Next.js, take a look at the following resources:
+- **SQLite over a hosted database** — keeps setup dependency-free and fast for local development; a production version would use a proper database with user isolation.
+- **Current weather only** — the UI is focused on the core assignment flow; hourly and daily forecast views were intentionally left out of scope.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Known Limitations
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- No authentication or user profiles — all visitors share the same search history.
+- Weather data is current conditions only; no hourly or daily forecast is displayed.
+- API availability depends on Open-Meteo uptime and network access from the host machine.
 
-## Deploy on Vercel
+## Project Notes
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Assignment brief: [`home-task_software-engineer.md`](./home-task_software-engineer.md)
+- AI prompts used during development: [`AI_PROMPT_HISTORY.md`](./AI_PROMPT_HISTORY.md)

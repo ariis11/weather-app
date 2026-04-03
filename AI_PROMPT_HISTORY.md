@@ -190,10 +190,10 @@ This file tracks the prompts used during development of the Weather App.
 
 ---
 
-### Prompt 20
-> what could be useful to display in weather card and look good? [listed available Open-Meteo fields]
+### Prompt 18
+> implement handleSelectedLocation which would be used by both search history and search lists selections. handle query, close dropdown, fetch weather, set selectedLocation and weather and if anything else is needed
 
-**Result:** Added `apparent_temperature`, `relative_humidity_2m`, `precipitation`, `weather_code`, `cloud_cover`, `wind_speed_10m`, `wind_direction_10m`, `is_day` to the `current=` param in `handleSelectLocation`. Expanded `CurrentWeather` interface with typed fields for all new variables. Rewrote `WeatherCard` to show: condition icon (emoji, day/night aware via `is_day`) + label mapped from `weather_code`; large temperature + "feels like" line; 2×2 metric tile grid (humidity, wind with compass direction, precipitation, cloud cover); slim meta footer (update time, timezone abbreviation, elevation).
+**Result:** Added `SelectedLocation` type (minimal shape compatible with both `GeocodingResult` and `SearchHistoryEntry`). Changed `selectedLocation` state type to `SelectedLocation | null`. Added `isWeatherLoading` and `weatherError` state. Implemented `handleSelectLocation` in `page.tsx` which: sets the query to the location name, closes the dropdown, resets previous weather state, fetches weather via `GET /api/weather` with `timezone=auto` fallback, saves the selection to `POST /api/search-history` and refreshes the history list (fire-and-forget). Wired `onSelectResult` and `onSelectHistoryItem` on `SearchInput` to the same handler. Added a loading skeleton and error message below the search bar for weather fetch state.
 
 ---
 
@@ -204,9 +204,44 @@ This file tracks the prompts used during development of the Weather App.
 
 ---
 
-### Prompt 18
-> implement handleSelectedLocation which would be used by both search history and search lists selections. handle query, close dropdown, fetch weather, set selectedLocation and weather and if anything else is needed
+### Prompt 20
+> what could be useful to display in weather card and look good? [listed available Open-Meteo fields]
 
-**Result:** Added `SelectedLocation` type (minimal shape compatible with both `GeocodingResult` and `SearchHistoryEntry`). Changed `selectedLocation` state type to `SelectedLocation | null`. Added `isWeatherLoading` and `weatherError` state. Implemented `handleSelectLocation` in `page.tsx` which: sets the query to the location name, closes the dropdown, resets previous weather state, fetches weather via `GET /api/weather` with `timezone=auto` fallback, saves the selection to `POST /api/search-history` and refreshes the history list (fire-and-forget). Wired `onSelectResult` and `onSelectHistoryItem` on `SearchInput` to the same handler. Added a loading skeleton and error message below the search bar for weather fetch state.
+**Result:** Added `apparent_temperature`, `relative_humidity_2m`, `precipitation`, `weather_code`, `cloud_cover`, `wind_speed_10m`, `wind_direction_10m`, `is_day` to the `current=` param in `handleSelectLocation`. Expanded `CurrentWeather` interface with typed fields for all new variables. Rewrote `WeatherCard` to show: condition icon (emoji, day/night aware via `is_day`) + label mapped from `weather_code`; large temperature + "feels like" line; 2×2 metric tile grid (humidity, wind with compass direction, precipitation, cloud cover); slim meta footer (update time, timezone abbreviation, elevation).
+
+---
+
+### Prompt 21
+> [attached terminal showing ConnectTimeoutError on GET /api/weather with %2C-encoded current= params]
+
+**Result:** Fixed a bug in `app/api/weather/route.ts` where `upstreamUrl.searchParams.set("current", current)` was re-encoding commas as `%2C`. Open-Meteo requires literal commas in the `current=` parameter, so percent-encoded commas caused the request to hang and time out after 10 s. Fix: build `latitude`, `longitude`, `timezone` via `URLSearchParams` as normal, then append `&current=` as a raw string so commas remain unencoded.
+
+---
+
+### Prompt 22
+> sometimes when a location is selected and weather is displayed, the input still has the text cursor active. Typing a new query fires geocoding requests but the dropdown doesn't appear.
+
+**Result:** After selecting a location, `handleSelectLocation` set `isFocused` to `false` (hiding the dropdown in React state) but never called `.blur()` on the DOM element, so the browser kept physical focus on the input. When the user started typing again, `onChange` fired geocoding but `isFocused` was `false` so the dropdown never rendered. Fix: added `(document.activeElement as HTMLElement)?.blur()` immediately after `setIsFocused(false)` in `handleSelectLocation`.
+
+---
+
+### Prompt 23
+> I don't like how you did `(document.activeElement as HTMLElement)?.blur()`, use useRef instead, it's better practice.
+
+**Result:** Replaced `document.activeElement` with a proper `useRef`. Added `inputRef = useRef<HTMLInputElement>(null)` in `page.tsx`. Added `inputRef: RefObject<HTMLInputElement | null>` prop to `SearchInput` and attached it to the `<input ref={inputRef}>` element. Replaced the `document.activeElement` call in `handleSelectLocation` with `inputRef.current?.blur()`.
+
+---
+
+### Prompt 24
+> I have written README file, write it more readable way and fix wordings and spelling and if needed add details that are missing.
+
+**Result:** Rewrote `README.md` for clarity and completeness. Filled in the two unfinished placeholder lines (search history dropdown behaviour, 5-item display limit). Expanded feature bullets to explain the "how", not just the "what". Added Tailwind CSS to the tech stack (was missing). Converted the run steps to fenced code blocks and the URL to a clickable link. Reformatted Available Scripts as a table. Tightened Trade-offs and Known Limitations wording. Made the Project Notes file references clickable links. Fixed all spelling and grammar throughout.
+
+---
+
+### Prompt 25
+> Add to assumptions that after 2 characters are entered just then display search results.
+
+**Result:** Added a bullet to the Assumptions section of `README.md` stating that geocoding search is triggered only after at least 2 characters are entered.
 
 ---

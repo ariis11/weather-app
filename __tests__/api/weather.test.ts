@@ -3,7 +3,7 @@ import { NextRequest } from "next/server";
 import { GET } from "@/app/api/weather/route";
 
 const WEATHER_API_BASE = "https://api.open-meteo.com/v1/forecast";
-const DEFAULT_CURRENT_VARIABLES = "temperature_2m,weathercode,windspeed_10m";
+const DEFAULT_CURRENT_VARIABLES = "temperature_2m,weather_code,wind_speed_10m";
 
 const MOCK_WEATHER_RESPONSE = {
   latitude: 3.125,
@@ -17,15 +17,15 @@ const MOCK_WEATHER_RESPONSE = {
     time: "iso8601",
     interval: "seconds",
     temperature_2m: "°C",
-    weathercode: "wmo code",
-    windspeed_10m: "km/h",
+    weather_code: "wmo code",
+    wind_speed_10m: "km/h",
   },
   current: {
     time: "2026-04-01T17:30",
     interval: 900,
     temperature_2m: 25.7,
-    weathercode: 3,
-    windspeed_10m: 12.5,
+    weather_code: 3,
+    wind_speed_10m: 12.5,
   },
 };
 
@@ -178,7 +178,7 @@ describe("GET /api/weather", () => {
       expect(data.latitude).toBe(3.125);
       expect(data.longitude).toBe(101.625);
       expect(data.current.temperature_2m).toBe(25.7);
-      expect(data.current.weathercode).toBe(3);
+      expect(data.current.weather_code).toBe(3);
       expect(data.current_units.temperature_2m).toBe("°C");
     });
 

@@ -3,7 +3,20 @@ import type { WeatherResponse } from "@/types/weather";
 
 const WEATHER_API_BASE = "https://api.open-meteo.com/v1/forecast";
 
-const DEFAULT_CURRENT_VARIABLES = "temperature_2m,weathercode,windspeed_10m";
+const DEFAULT_CURRENT_VARIABLES = "temperature_2m,weather_code,wind_speed_10m";
+
+function parseCurrentVariables(rawCurrent: string): string | null {
+  const variables = rawCurrent
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+  if (variables.length === 0) return null;
+  const areAllValid = variables.every((value) => /^[a-z0-9_]+$/i.test(value));
+  if (!areAllValid) return null;
+
+  return variables.join(",");
+}
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
@@ -27,8 +40,14 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const current =
-    searchParams.get("current") ?? DEFAULT_CURRENT_VARIABLES;
+  const requestedCurrent = searchParams.get("current") ?? DEFAULT_CURRENT_VARIABLES;
+  const current = parseCurrentVariables(requestedCurrent);
+  if (!current) {
+    return NextResponse.json(
+      { error: "'current' must be a comma-separated list of weather variables" },
+      { status: 400 }
+    );
+  }
   const timezone = searchParams.get("timezone") ?? "auto";
 
   const baseParams = new URLSearchParams({
@@ -38,18 +57,25 @@ export async function GET(request: NextRequest) {
   });
   const upstreamUrl = `${WEATHER_API_BASE}?${baseParams}&current=${current}`;
 
-  const response = await fetch(upstreamUrl, {
-    next: { revalidate: 300 },
-  });
+  try {
+    const response = await fetch(upstreamUrl, {
+      next: { revalidate: 300 },
+    });
 
-  if (!response.ok) {
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: "Failed to fetch weather data" },
+        { status: response.status }
+      );
+    }
+
+    const data: WeatherResponse = await response.json();
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error("[GET /api/weather]", error);
     return NextResponse.json(
       { error: "Failed to fetch weather data" },
-      { status: response.status }
+      { status: 502 }
     );
   }
-
-  const data: WeatherResponse = await response.json();
-
-  return NextResponse.json(data);
 }

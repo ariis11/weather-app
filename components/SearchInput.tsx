@@ -1,11 +1,13 @@
 "use client";
 
+import { type RefObject } from "react";
 import SearchHistoryList from "@/components/SearchHistoryList";
 import SearchResultsList from "@/components/SearchResultsList";
 import type { GeocodingResult } from "@/types/geocoding";
 import type { SearchHistoryEntry } from "@/types/searchHistory";
 
 interface SearchInputProps {
+  inputRef: RefObject<HTMLInputElement | null>;
   query: string;
   onChange: (value: string) => void;
   isFocused: boolean;
@@ -21,6 +23,7 @@ interface SearchInputProps {
 }
 
 export default function SearchInput({
+  inputRef,
   query,
   onChange,
   isFocused,
@@ -93,6 +96,7 @@ export default function SearchInput({
 
         {/* Text input */}
         <input
+          ref={inputRef}
           type="text"
           value={query}
           onChange={(e) => onChange(e.target.value)}

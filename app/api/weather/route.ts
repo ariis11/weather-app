@@ -31,13 +31,14 @@ export async function GET(request: NextRequest) {
     searchParams.get("current") ?? DEFAULT_CURRENT_VARIABLES;
   const timezone = searchParams.get("timezone") ?? "auto";
 
-  const upstreamUrl = new URL(WEATHER_API_BASE);
-  upstreamUrl.searchParams.set("latitude", String(latitude));
-  upstreamUrl.searchParams.set("longitude", String(longitude));
-  upstreamUrl.searchParams.set("current", current);
-  upstreamUrl.searchParams.set("timezone", timezone);
+  const baseParams = new URLSearchParams({
+    latitude: String(latitude),
+    longitude: String(longitude),
+    timezone,
+  });
+  const upstreamUrl = `${WEATHER_API_BASE}?${baseParams}&current=${current}`;
 
-  const response = await fetch(upstreamUrl.toString(), {
+  const response = await fetch(upstreamUrl, {
     next: { revalidate: 300 },
   });
 

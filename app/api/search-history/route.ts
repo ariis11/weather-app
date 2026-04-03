@@ -37,7 +37,8 @@ export async function GET(request: NextRequest) {
   try {
     const entries = getRecentSearches(limit);
     return NextResponse.json(entries);
-  } catch {
+  } catch (err) {
+    console.error("[GET /api/search-history]", err);
     return NextResponse.json(
       { error: "Failed to retrieve search history" },
       { status: 500 }
@@ -92,7 +93,8 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(entry, { status: 201 });
-  } catch {
+  } catch (err) {
+    console.error("[POST /api/search-history]", err);
     return NextResponse.json(
       { error: "Failed to save search history" },
       { status: 500 }

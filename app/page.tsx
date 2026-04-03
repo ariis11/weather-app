@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import SearchInput from "@/components/SearchInput";
 import WeatherCard from "@/components/WeatherCard";
 import type { GeocodingResult, GeocodingResponse } from "@/types/geocoding";
@@ -16,6 +16,7 @@ type SelectedLocation = {
 
 export default function Home() {
   // ── State ──────────────────────────────────────────────────────────────────
+  const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const [selectedLocation, setSelectedLocation] =
@@ -93,6 +94,7 @@ export default function Home() {
   async function handleSelectLocation(location: SelectedLocation) {
     setQuery(location.name);
     setIsFocused(false);
+    inputRef.current?.blur();
     setSelectedLocation(location);
     setWeather(null);
     setWeatherError(null);
@@ -186,6 +188,7 @@ export default function Home() {
         {/* Search bar */}
         <div className="w-full max-w-xl">
           <SearchInput
+            inputRef={inputRef}
             query={query}
             onChange={setQuery}
             isFocused={isFocused}
@@ -221,19 +224,6 @@ export default function Home() {
           </div>
         )}
       </main>
-
-      {/* ── Footer ───────────────────────────────────────────────────────── */}
-      <footer className="py-4 text-center text-xs text-slate-400 dark:text-slate-600">
-        Powered by{" "}
-        <a
-          href="https://open-meteo.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline underline-offset-2 hover:text-slate-600 dark:hover:text-slate-400 transition-colors"
-        >
-          Open-Meteo
-        </a>
-      </footer>
     </div>
   );
 }

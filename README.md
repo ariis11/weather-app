@@ -13,7 +13,7 @@ A small full-stack weather application built with Next.js and TypeScript.
 
 ## Tech Stack
 
-- **Runtime** — Node.js
+- **Runtime** — Node.js 22.13.0
 - **Language** — TypeScript
 - **Framework** — Next.js 16
 - **Styling** — Tailwind CSS v4
